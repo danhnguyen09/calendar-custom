@@ -25,6 +25,7 @@ public class MonthView extends View {
 
   private float BG_CORNER_RADIUS = 8f;
   private int ROW_COUNT = 6;
+  private int COL_COUNT = 7;
 
   private Paint paint;
   private TextPaint eventTitlePaint;
@@ -76,7 +77,7 @@ public class MonthView extends View {
     }
     int curId = 0;
     for (int y = 0; y < ROW_COUNT; y++) {
-      for (int x = 0; x <= 6; x++) {
+      for (int x = 0; x < COL_COUNT; x++) {
         DayMonthly day = days.get(curId);
         if (day != null) {
           dayVerticalOffsets.put(day.getIndexOnMonthView(),
@@ -90,11 +91,11 @@ public class MonthView extends View {
           calendar.setTime(day.getCode());
           Log.d("Today", "day:" + day.getValue() + "/" + (calendar.get(Calendar.MONTH) + 1));
           if (day.isToday()) {
-            canvas.drawCircle(xPosCenter, yPos + textSize * 1.15f, textSize * 0.7f,
+            canvas.drawCircle(xPosCenter, yPos + textSize * 1.65f, textSize * 1.2f,
                 getCirclePaint(day));
           }
           canvas.drawText(String.valueOf(day.getValue()), xPosCenter,
-              yPos + textSize + textSize * 0.5f, getTextPaint(day));
+              yPos + textSize * 2f, getTextPaint(day));
           dayVerticalOffsets
               .put(day.getIndexOnMonthView(), (int) (verticalOffset + paint.getTextSize() * 2));
         }
@@ -113,6 +114,18 @@ public class MonthView extends View {
     invalidate();
   }
 
+  public int getWeekDaysLetterHeight() {
+    return weekDaysLetterHeight;
+  }
+
+  public float getDayWidth() {
+    return dayWidth;
+  }
+
+  public float getDayHeight() {
+    return dayHeight;
+  }
+
   private void initWeekDayLetters() {
     dayLetters = new ArrayList<>(
         Arrays.asList(getContext().getResources().getStringArray(R.array.week_day_letters)));
@@ -126,7 +139,7 @@ public class MonthView extends View {
   private Paint getTextPaint(DayMonthly startDay) {
     int paintColor = textColor;
     if (startDay.isToday()) {
-      paintColor = Color.RED;
+      paintColor = Color.WHITE;
     } else if (!startDay.isThisMonth()) {
       paintColor = Color.LTGRAY;
     }
@@ -135,7 +148,7 @@ public class MonthView extends View {
 
   private Paint getCirclePaint(DayMonthly day) {
     Paint curPaint = new Paint(paint);
-    int paintColor = Color.BLUE;
+    int paintColor = Color.RED;
     if (!day.isThisMonth()) {
       paintColor = Color.LTGRAY;
     }
@@ -174,11 +187,11 @@ public class MonthView extends View {
       if (showWeekNumbers) {
         lineX += horizontalOffset;
       }
-      canvas.drawLine(lineX, 0f, lineX, canvas.getHeight(), gridPaint);
+      canvas.drawLine(lineX, weekDaysLetterHeight, lineX, canvas.getHeight(), gridPaint);
     }
 
     // horizontal lines
-    canvas.drawLine(0f, 0f, canvas.getHeight(), 0f, gridPaint);
+//    canvas.drawLine(0f, 0f, canvas.getHeight(), 0f, gridPaint);
     for (int i = 0; i <= 5; i++) {
       canvas.drawLine(0f, i * dayHeight + weekDaysLetterHeight, canvas.getWidth(),
           i * dayHeight + weekDaysLetterHeight, gridPaint);
