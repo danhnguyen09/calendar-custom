@@ -16,6 +16,7 @@
     android:layout_height="wrap_content"
     android:layout_toStartOf="@+id/top_right_arrow"
     android:layout_toEndOf="@+id/top_left_arrow"
+    android:textStyle="bold"
     android:gravity="center" />
 
   <ImageView

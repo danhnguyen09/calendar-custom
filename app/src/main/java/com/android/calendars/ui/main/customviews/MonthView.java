@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.View;
 import androidx.annotation.Nullable;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-import org.joda.time.DateTime;
 
 /**
  * Created by Danh Nguyen on 7/31/20.
@@ -71,23 +71,32 @@ public class MonthView extends View {
     measureDaySize(canvas);
     drawGrid(canvas);
     addWeekDayLetters(canvas);
-    if (days == null || days.isEmpty()) return;
+    if (days == null || days.isEmpty()) {
+      return;
+    }
     int curId = 0;
-    for (int y = 0; y< ROW_COUNT; y ++) {
+    for (int y = 0; y < ROW_COUNT; y++) {
       for (int x = 0; x <= 6; x++) {
         DayMonthly day = days.get(curId);
         if (day != null) {
-          dayVerticalOffsets.put(day.getIndexOnMonthView(), dayVerticalOffsets.get(day.getIndexOnMonthView()) + weekDaysLetterHeight);
+          dayVerticalOffsets.put(day.getIndexOnMonthView(),
+              dayVerticalOffsets.get(day.getIndexOnMonthView()) + weekDaysLetterHeight);
           int verticalOffset = dayVerticalOffsets.get(day.getIndexOnMonthView());
           float xPos = x * dayWidth + horizontalOffset;
           float yPos = y * dayHeight + verticalOffset;
           float xPosCenter = xPos + dayWidth / 2;
           float textSize = paint.getTextSize();
+          Calendar calendar = Calendar.getInstance();
+          calendar.setTime(day.getCode());
+          Log.d("Today", "day:" + day.getValue() + "/" + (calendar.get(Calendar.MONTH) + 1));
           if (day.isToday()) {
-            canvas.drawCircle(xPosCenter, yPos + textSize * 1.15f, textSize * 0.7f, getCirclePaint(day));
+            canvas.drawCircle(xPosCenter, yPos + textSize * 1.15f, textSize * 0.7f,
+                getCirclePaint(day));
           }
-          canvas.drawText(String.valueOf(day.getValue()), xPosCenter, yPos + textSize + textSize * 0.5f, getTextPaint(day));
-          dayVerticalOffsets.put(day.getIndexOnMonthView(), (int) (verticalOffset + paint.getTextSize() * 2));
+          canvas.drawText(String.valueOf(day.getValue()), xPosCenter,
+              yPos + textSize + textSize * 0.5f, getTextPaint(day));
+          dayVerticalOffsets
+              .put(day.getIndexOnMonthView(), (int) (verticalOffset + paint.getTextSize() * 2));
         }
         curId++;
       }
@@ -105,7 +114,8 @@ public class MonthView extends View {
   }
 
   private void initWeekDayLetters() {
-    dayLetters = new ArrayList<>(Arrays.asList(getContext().getResources().getStringArray(R.array.week_day_letters)));
+    dayLetters = new ArrayList<>(
+        Arrays.asList(getContext().getResources().getStringArray(R.array.week_day_letters)));
     if (Calendar.getInstance().getFirstDayOfWeek() == Calendar.SUNDAY) {
       int size = dayLetters.size();
       String last = dayLetters.remove(size - 1);
@@ -117,20 +127,17 @@ public class MonthView extends View {
     int paintColor = textColor;
     if (startDay.isToday()) {
       paintColor = Color.RED;
+    } else if (!startDay.isThisMonth()) {
+      paintColor = Color.LTGRAY;
     }
-
-    if (!startDay.isThisMonth()) {
-      paintColor = Color.DKGRAY;
-    }
-
     return getColoredPaint(paintColor);
   }
 
   private Paint getCirclePaint(DayMonthly day) {
     Paint curPaint = new Paint(paint);
-    int paintColor = primaryColor;
+    int paintColor = Color.BLUE;
     if (!day.isThisMonth()) {
-      paintColor = Color.GRAY;
+      paintColor = Color.LTGRAY;
     }
     curPaint.setColor(paintColor);
     return curPaint;
@@ -179,7 +186,7 @@ public class MonthView extends View {
   }
 
   private void init(Context context) {
-    primaryColor = Color.GREEN;
+    primaryColor = Color.BLACK;
     textColor = Color.BLACK;
 //    showWeekNumbers = config.showWeekNumbers
 //    dimPastEvents = config.dimPastEvents
@@ -210,7 +217,7 @@ public class MonthView extends View {
       currDayOfWeek = -1;
       return;
     }
-    currDayOfWeek = new DateTime().getDayOfWeek();
+    currDayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
     if (Calendar.getInstance().getFirstDayOfWeek() == Calendar.SUNDAY) {
       currDayOfWeek %= 7;
     } else {

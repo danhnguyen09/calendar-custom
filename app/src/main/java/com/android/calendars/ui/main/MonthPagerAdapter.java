@@ -15,9 +15,9 @@ import java.util.List;
 public class MonthPagerAdapter extends FragmentStatePagerAdapter {
 
   private SparseArray<MonthItemFragment> mFragments = new SparseArray<>();
-  private List<String> mCodes;
+  private List<Long> mCodes;
 
-  public MonthPagerAdapter(@NonNull FragmentManager fm, List<String> codes, int behavior) {
+  public MonthPagerAdapter(@NonNull FragmentManager fm, List<Long> codes, int behavior) {
     super(fm, behavior);
     mCodes = codes;
   }
@@ -26,7 +26,7 @@ public class MonthPagerAdapter extends FragmentStatePagerAdapter {
   @Override
   public Fragment getItem(int position) {
     Bundle bundle = new Bundle();
-    bundle.putString(Constant.DAY_CODE, mCodes.get(position));
+    bundle.putLong(Constant.DAY_CODE, mCodes.get(position));
     MonthItemFragment monthFragment = new MonthItemFragment();
     monthFragment.setArguments(bundle);
     mFragments.put(position, monthFragment);

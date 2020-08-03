@@ -16,4 +16,14 @@ public class MainActivity extends AppCompatActivity {
         .addToBackStack(null)
         .commit();
   }
+
+  @Override
+  public void onBackPressed() {
+    int stackCount = getSupportFragmentManager().getBackStackEntryCount();
+    if (stackCount < 2) {
+      finish();
+    } else {
+      super.onBackPressed();
+    }
+  }
 }
