@@ -47,7 +47,7 @@ public class MonthItemFragment extends Fragment implements MonthlyCalendar {
     mMonthlyCalendarImpl = new MonthlyCalendarImpl(this, view.getContext());
     DateTime targetDate = getDateTimeFromCode(mDayCode);
     mMonthlyCalendarImpl.setTargetDate(targetDate);
-    mMonthlyCalendarImpl.getDays();
+    mMonthlyCalendarImpl.getDays(false);
   }
 
   @Override
