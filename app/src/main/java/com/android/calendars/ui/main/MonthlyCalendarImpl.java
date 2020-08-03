@@ -1,13 +1,17 @@
 package com.android.calendars.ui.main;
 
 import android.content.Context;
+import com.android.calendars.Constant;
 import com.android.calendars.R;
 import com.android.calendars.models.DayMonthly;
 import com.android.calendars.models.Event;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Danh Nguyen on 7/31/20.
@@ -71,8 +75,65 @@ public class MonthlyCalendarImpl {
       value++;
     }
     currentCal.setTimeInMillis(targetDate);
+    makeEvent(days);
     monthlyCalendar.updateMonthlyCalendar(context, getMonthName(targetDate), days, false,
         currentCal.getTime());
+  }
+
+  private Date createEventDate(int day, int month, int year) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.DAY_OF_MONTH, day);
+    calendar.set(Calendar.MONTH, month - 1);
+    calendar.set(Calendar.YEAR, year);
+    return calendar.getTime();
+  }
+
+  private void makeEvent(List<DayMonthly> days) {
+    Event event1 = new Event("001", "Event test 1234", createEventDate(30, 7, 2020),
+        createEventDate(30, 7, 2020), null);
+    Event event2 = new Event("002", "Event test 5678", createEventDate(8, 8, 2020),
+        createEventDate(10, 8, 2020), null);
+//    mEvents.add(event1);
+    mEvents.add(event2);
+    HashMap<String, List<Event>> dayEvents = new HashMap<>();
+    mEvents.forEach(event -> {
+      Date startEvent = event.getStartDate();
+      Date endEvent = event.getEndDate();
+      String startEventCode = getStringFromDate(startEvent);
+      String endEventCode = getStringFromDate(endEvent);
+      List<Event> events = dayEvents.get(startEventCode);
+      if (events == null) {
+        events = new ArrayList<>();
+      }
+      events.add(event);
+      dayEvents.put(startEventCode, events);
+      Date currentDate = startEvent;
+      while (!getStringFromDate(currentDate).equalsIgnoreCase(endEventCode)) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        currentDate = calendar.getTime();
+        startEventCode = getStringFromDate(currentDate);
+        List<Event> eventList = dayEvents.get(startEventCode);
+        if (eventList == null) {
+          eventList = new ArrayList<>();
+        }
+        eventList.add(event);
+        dayEvents.put(startEventCode, eventList);
+      }
+    });
+    days.forEach(dayMonthly ->  {
+      String key = getStringFromDate(dayMonthly.getCode());
+      if (dayEvents.containsKey(key)) {
+        dayMonthly.setDayEvents(dayEvents.get(key));
+      }
+    });
+  }
+
+  private String getStringFromDate(Date date) {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constant.DAYCODE_PATTERN,
+        Locale.getDefault());
+    return simpleDateFormat.format(date);
   }
 
   private boolean isToday(Calendar calendar) {

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseIntArray;
@@ -13,9 +14,12 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import com.android.calendars.R;
 import com.android.calendars.models.DayMonthly;
+import com.android.calendars.models.Event;
+import com.android.calendars.models.MonthEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,7 +47,7 @@ public class MonthView extends View {
   private int horizontalOffset = 0;
   private boolean showWeekNumbers = false;
   private boolean dimPastEvents = true;
-  //  private var allEvents = ArrayList<MonthViewEvent>()
+  private List<MonthEvent> allEvents = new ArrayList<>();
   private RectF bgRectF = new RectF();
   private List<String> dayLetters = new ArrayList<>();
   private List<DayMonthly> days = new ArrayList<>();
@@ -102,6 +106,9 @@ public class MonthView extends View {
         curId++;
       }
     }
+    for (MonthEvent event : allEvents) {
+      drawEvent(event, canvas);
+    }
   }
 
   public void updateDays(List<DayMonthly> newDays) {
@@ -110,7 +117,7 @@ public class MonthView extends View {
     horizontalOffset = 0;
     initWeekDayLetters();
     setupCurrentDayOfWeekIndex();
-//    groupAllEvents();
+    groupAllEvents();
     invalidate();
   }
 
@@ -126,6 +133,115 @@ public class MonthView extends View {
     return dayHeight;
   }
 
+  private void drawEvent(MonthEvent event, Canvas canvas) {
+    float verticalOffset = 0f;
+    int loopSize = Math.min(event.getDayCount(), 7 - event.getStartDayIndex() % 7);
+    for (int i = 0; i < loopSize; i++) {
+      verticalOffset = Math
+          .max(verticalOffset, dayVerticalOffsets.get(event.getStartDayIndex() + i));
+    }
+    float xPos = event.getStartDayIndex() % 7 * dayWidth + horizontalOffset;
+    float yPos = (event.getStartDayIndex() / 7f) * dayHeight;
+    float xPosCenter = xPos + dayWidth / 2;
+
+    if (verticalOffset - eventTitleHeight * 2 > dayHeight) {
+      canvas.drawText("...", xPosCenter, yPos + verticalOffset - eventTitleHeight / 2f,
+          getTextPaint(days.get(event.getStartDayIndex())));
+      return;
+    }
+
+    // event background rectangle
+    float backgroundY = yPos + verticalOffset;
+    float bgLeft = xPos + smallPadding;
+    float bgTop = backgroundY + smallPadding - eventTitleHeight;
+    float bgRight = xPos - smallPadding + dayWidth * event.getDayCount();
+    float bgBottom = backgroundY + smallPadding * 2;
+    if (bgRight > canvas.getWidth() * 1f) {
+      bgRight = canvas.getWidth() * 1f - smallPadding;
+      int newStartDayIndex = (event.getStartDayIndex() / 7 + 1) * 7;
+      if (newStartDayIndex < 42) {
+        MonthEvent newEvent = new MonthEvent(event.getId(), event.getTitle(), event.getStartDate(),
+            event.getColor(), newStartDayIndex,
+            event.getDayCount() - newStartDayIndex + event.getStartDayIndex(),
+            event.getOriginalStartDayIndex(), event.isAllDay());
+        drawEvent(newEvent, canvas);
+      }
+    }
+
+    DayMonthly startDayIndex = days.get(event.getOriginalStartDayIndex());
+    DayMonthly endDayIndex = days
+        .get(Math.min(event.getStartDayIndex() + event.getDayCount() - 1, 41));
+    bgRectF.set(bgLeft, bgTop, bgRight, bgBottom);
+    canvas.drawRoundRect(bgRectF, BG_CORNER_RADIUS, BG_CORNER_RADIUS,
+        getEventBackgroundColor(event, startDayIndex, endDayIndex));
+
+    drawEventTitle(event, canvas, xPos, yPos + verticalOffset, bgRight - bgLeft - smallPadding,
+        startDayIndex, endDayIndex);
+
+    for (int i = 0; i < loopSize; i++) {
+      dayVerticalOffsets.put(event.getStartDayIndex() + i,
+          (int) (verticalOffset + eventTitleHeight + smallPadding * 2));
+    }
+  }
+
+  private void drawEventTitle(MonthEvent event, Canvas canvas, float x, float y,
+      float availableWidth, DayMonthly startDay, DayMonthly endDay) {
+    CharSequence ellipsized = TextUtils
+        .ellipsize(event.getTitle(), eventTitlePaint, availableWidth - smallPadding,
+            TextUtils.TruncateAt.END);
+    canvas.drawText(event.getTitle(), 0, ellipsized.length(), x + smallPadding * 2, y,
+        getEventTitlePaint(event, startDay, endDay));
+  }
+
+  private void groupAllEvents() {
+    days.forEach(day -> {
+      List<Event> events = day.getDayEvents();
+      if (events != null && !events.isEmpty()) {
+        events.forEach(event -> {
+          MonthEvent lastEvent = allEvents.stream()
+              .filter(evt -> event.getId().equalsIgnoreCase(evt.getId())).findFirst().orElse(null);
+          int dayEventCount = getEventLastingDaysCount(event);
+          boolean validDayEvent = false;
+          if ((lastEvent == null || lastEvent.getStartDayIndex() + dayEventCount <= day
+              .getIndexOnMonthView()) && !validDayEvent) {
+            MonthEvent monthEvent = new MonthEvent(event.getId(), event.getTitle(),
+                event.getStartDate(), Color.parseColor("#903BAA"), day.getIndexOnMonthView(), dayEventCount,
+                day.getIndexOnMonthView(), false);
+            allEvents.add(monthEvent);
+          }
+        });
+      }
+    });
+  }
+
+  // take into account cases when an event starts on the previous screen, subtract those days
+  private int getEventLastingDaysCount(Event event) {
+    Date eventStartDateTime = event.getStartDate();
+    Date eventEndDateTime = event.getEndDate();
+    Date screenStartDateTime = days.get(0).getCode();
+    int diff = (int) ((eventStartDateTime.getTime() - screenStartDateTime.getTime()) / (1000 * 60
+        * 60 * 24));
+    if (diff < 0) {
+      eventStartDateTime = screenStartDateTime;
+    }
+    Calendar midNightCal = Calendar.getInstance();
+    midNightCal.setTime(eventEndDateTime);
+    midNightCal.set(Calendar.HOUR_OF_DAY, 0);
+    midNightCal.set(Calendar.MINUTE, 0);
+    midNightCal.set(Calendar.SECOND, 0);
+    midNightCal.set(Calendar.MILLISECOND, 0);
+
+    boolean isMidnight = midNightCal.getTimeInMillis() == eventStartDateTime.getTime();
+    int numDayOfEvent = (int) ((eventEndDateTime.getTime() - eventStartDateTime.getTime()) / (1000
+        * 60
+        * 60 * 24));
+    int daysCnt = numDayOfEvent;
+    if (numDayOfEvent == 1 && isMidnight) {
+      daysCnt = 0;
+    }
+    return daysCnt + 1;
+  }
+
   private void initWeekDayLetters() {
     dayLetters = new ArrayList<>(
         Arrays.asList(getContext().getResources().getStringArray(R.array.week_day_letters)));
@@ -134,6 +250,24 @@ public class MonthView extends View {
       String last = dayLetters.remove(size - 1);
       dayLetters.add(0, last);
     }
+  }
+
+  private Paint getEventTitlePaint(MonthEvent event, DayMonthly startDay, DayMonthly endDay) {
+    int paintColor = paintColor = Color.WHITE;;
+//    if (!startDay.isThisMonth() && !endDay.isThisMonth()) {
+//      paintColor = Color.WHITE;
+//    }
+    Paint curPaint = new Paint(eventTitlePaint);
+    curPaint.setColor(paintColor);
+    return curPaint;
+  }
+
+  private Paint getEventBackgroundColor(MonthEvent event, DayMonthly startDay, DayMonthly endDay) {
+    int paintColor = event.getColor();
+    if (!startDay.isThisMonth() && !endDay.isThisMonth()) {
+      paintColor = Color.GREEN;
+    }
+    return getColoredPaint(paintColor);
   }
 
   private Paint getTextPaint(DayMonthly startDay) {

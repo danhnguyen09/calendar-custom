@@ -2,6 +2,7 @@ package com.android.calendars.models;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Danh Nguyen on 7/31/20.
@@ -13,11 +14,11 @@ public class DayMonthly {
   private boolean isToday;
   private Date code;
   private int weekOfYear;
-  private ArrayList<Event> dayEvents;
+  private List<Event> dayEvents;
   private int indexOnMonthView;
 
   public DayMonthly(int value, boolean isThisMonth, boolean isToday, Date code, int weekOfYear,
-      ArrayList<Event> dayEvents, int indexOnMonthView) {
+      List<Event> dayEvents, int indexOnMonthView) {
     this.value = value;
     this.isThisMonth = isThisMonth;
     this.isToday = isToday;
@@ -45,5 +46,13 @@ public class DayMonthly {
 
   public Date getCode() {
     return code;
+  }
+
+  public List<Event> getDayEvents() {
+    return dayEvents;
+  }
+
+  public void setDayEvents(List<Event> dayEvents) {
+    this.dayEvents = dayEvents;
   }
 }

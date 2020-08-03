@@ -70,7 +70,7 @@ public class MonthItemFragment extends Fragment implements MonthlyCalendar {
           isAddingBG = true;
           int dayIndex = 0;
           for (int y = 0; y < 6; y++) {
-            for (int x = 0; x <7; x++) {
+            for (int x = 0; x < 7; x++) {
               DayMonthly day = days.get(dayIndex);
               float xPos = x * monthView.getDayWidth();
               float yPos = y * monthView.getDayHeight() + monthView.getWeekDaysLetterHeight();
