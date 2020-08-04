@@ -1,17 +1,14 @@
 package com.android.calendars.ui.main;
 
 import android.content.Context;
-import com.android.calendars.Constant;
-import com.android.calendars.R;
+import com.android.calendars.DateHelper;
 import com.android.calendars.models.DayMonthly;
 import com.android.calendars.models.Event;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by Danh Nguyen on 7/31/20.
@@ -68,7 +65,7 @@ public class MonthlyCalendarImpl {
       newCalendar.setTime(curDay);
       newCalendar.set(Calendar.DAY_OF_MONTH, value);
       Date newDay = newCalendar.getTime();
-      isToday = isToday(newCalendar);
+      isToday = DateHelper.isToday(newCalendar);
       DayMonthly day = new DayMonthly(value, isThisMonth, isToday, newDay,
           newCalendar.get(Calendar.WEEK_OF_YEAR), new ArrayList<Event>(), i - 1);
       days.add(day);
@@ -76,8 +73,9 @@ public class MonthlyCalendarImpl {
     }
     currentCal.setTimeInMillis(targetDate);
     makeEvent(days);
-    monthlyCalendar.updateMonthlyCalendar(context, getMonthName(targetDate), days, false,
-        currentCal.getTime());
+    monthlyCalendar
+        .updateMonthlyCalendar(context, DateHelper.getMonthName(context, targetDate), days, false,
+            currentCal.getTime());
   }
 
   private Date createEventDate(int day, int month, int year) {
@@ -89,18 +87,38 @@ public class MonthlyCalendarImpl {
   }
 
   private void makeEvent(List<DayMonthly> days) {
-    Event event1 = new Event("001", "Event test 1234", createEventDate(30, 7, 2020),
-        createEventDate(30, 7, 2020), null);
-    Event event2 = new Event("002", "Event test 5678", createEventDate(8, 8, 2020),
-        createEventDate(10, 8, 2020), null);
-//    mEvents.add(event1);
+    Event event1 = new Event("001", "1. Event test 01", createEventDate(10, 8, 2020),
+        createEventDate(10, 8, 2020));
+    Event event2 = new Event("002", "2. Event test 02", createEventDate(10, 8, 2020),
+        createEventDate(10, 8, 2020));
+    Event event3 = new Event("003", "3. Event test 03", createEventDate(10, 8, 2020),
+        createEventDate(10, 8, 2020));
+    Event event4 = new Event("004", "4. Event test 04", createEventDate(10, 8, 2020),
+        createEventDate(10, 8, 2020));
+    Event event5 = new Event("005", "5. Event test 05\nService:", createEventDate(4, 8, 2020),
+        createEventDate(4, 8, 2020));
+    Event event6 = new Event("006", "6.Event test 06", createEventDate(8, 8, 2020),
+        createEventDate(15, 8, 2020));
+    Event event7 = new Event("007", "7. Event test 07", createEventDate(28, 8, 2020),
+        createEventDate(3, 9, 2020));
+    Event event8 = new Event("008", "8. Event test 08", createEventDate(6, 8, 2020),
+        createEventDate(10, 9, 2020));
+
+    mEvents.add(event1);
     mEvents.add(event2);
+    mEvents.add(event3);
+    mEvents.add(event4);
+    mEvents.add(event5);
+    mEvents.add(event6);
+//    mEvents.add(event7);
+    mEvents.add(event8);
+
     HashMap<String, List<Event>> dayEvents = new HashMap<>();
     mEvents.forEach(event -> {
       Date startEvent = event.getStartDate();
       Date endEvent = event.getEndDate();
-      String startEventCode = getStringFromDate(startEvent);
-      String endEventCode = getStringFromDate(endEvent);
+      String startEventCode = DateHelper.getStringFromDate(startEvent);
+      String endEventCode = DateHelper.getStringFromDate(endEvent);
       List<Event> events = dayEvents.get(startEventCode);
       if (events == null) {
         events = new ArrayList<>();
@@ -108,12 +126,12 @@ public class MonthlyCalendarImpl {
       events.add(event);
       dayEvents.put(startEventCode, events);
       Date currentDate = startEvent;
-      while (!getStringFromDate(currentDate).equalsIgnoreCase(endEventCode)) {
+      while (!DateHelper.getStringFromDate(currentDate).equalsIgnoreCase(endEventCode)) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentDate);
         calendar.add(Calendar.DAY_OF_MONTH, 1);
         currentDate = calendar.getTime();
-        startEventCode = getStringFromDate(currentDate);
+        startEventCode = DateHelper.getStringFromDate(currentDate);
         List<Event> eventList = dayEvents.get(startEventCode);
         if (eventList == null) {
           eventList = new ArrayList<>();
@@ -122,34 +140,11 @@ public class MonthlyCalendarImpl {
         dayEvents.put(startEventCode, eventList);
       }
     });
-    days.forEach(dayMonthly ->  {
-      String key = getStringFromDate(dayMonthly.getCode());
+    days.forEach(dayMonthly -> {
+      String key = DateHelper.getStringFromDate(dayMonthly.getCode());
       if (dayEvents.containsKey(key)) {
         dayMonthly.setDayEvents(dayEvents.get(key));
       }
     });
-  }
-
-  private String getStringFromDate(Date date) {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constant.DAYCODE_PATTERN,
-        Locale.getDefault());
-    return simpleDateFormat.format(date);
-  }
-
-  private boolean isToday(Calendar calendar) {
-    Calendar current = Calendar.getInstance();
-    return calendar.get(Calendar.DAY_OF_MONTH) == current.get(Calendar.DAY_OF_MONTH)
-        && calendar.get(Calendar.MONTH) == current.get(Calendar.MONTH)
-        && calendar.get(Calendar.YEAR) == current.get(Calendar.YEAR);
-  }
-
-  private String getMonthName(long targetDate) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(targetDate);
-    return getMonthName(context, calendar.get(Calendar.MONTH)) + " " + calendar.get(Calendar.YEAR);
-  }
-
-  private String getMonthName(Context context, int id) {
-    return context.getResources().getStringArray(R.array.months)[id];
   }
 }

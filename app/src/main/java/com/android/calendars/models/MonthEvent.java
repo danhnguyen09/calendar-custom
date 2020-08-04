@@ -1,5 +1,7 @@
 package com.android.calendars.models;
 
+import android.graphics.Color;
+import android.text.TextUtils;
 import java.util.Date;
 
 /**
@@ -9,18 +11,20 @@ public class MonthEvent {
   private String id;
   private String title;
   private Date startDate;
-  private int color;
+  private int bgColor = Color.WHITE;
+  private int[] eventBottomColor;
   private int startDayIndex;
   private int dayCount;
   private int originalStartDayIndex;
   private boolean isAllDay;
+  private int numberEventOnDay;
+  private int numberLineOfTitle = 1;
 
-  public MonthEvent(String id, String title, Date startDate, int color, int startDayIndex,
+  public MonthEvent(String id, String title, Date startDate, int startDayIndex,
       int dayCount, int originalStartDayIndex, boolean isAllDay) {
     this.id = id;
     this.title = title;
     this.startDate = startDate;
-    this.color = color;
     this.startDayIndex = startDayIndex;
     this.dayCount = dayCount;
     this.originalStartDayIndex = originalStartDayIndex;
@@ -39,8 +43,8 @@ public class MonthEvent {
     return startDate;
   }
 
-  public int getColor() {
-    return color;
+  public int getBackgroundColor() {
+    return bgColor;
   }
 
   public int getStartDayIndex() {
@@ -57,5 +61,29 @@ public class MonthEvent {
 
   public boolean isAllDay() {
     return isAllDay;
+  }
+
+  public int getNumberEventOnDay() {
+    return numberEventOnDay;
+  }
+
+  public void setNumberEventOnDay(int numberEventOnDay) {
+    this.numberEventOnDay = numberEventOnDay;
+  }
+
+  public int[] getEventBottomColor() {
+    return eventBottomColor;
+  }
+
+  public void setEventBottomColor(int[] eventBottomColor) {
+    this.eventBottomColor = eventBottomColor;
+  }
+
+  public int getNumberLineOfTitle() {
+    if (!TextUtils.isEmpty(getTitle()) && getTitle().contains("\n")) {
+      String[] arrays = getTitle().split("\n");
+      numberLineOfTitle = arrays.length;
+    }
+    return numberLineOfTitle;
   }
 }

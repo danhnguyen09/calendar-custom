@@ -91,12 +91,8 @@ public class MonthItemFragment extends Fragment implements MonthlyCalendar {
     bgView.setLayoutParams(layoutParams);
     bgView.setX(x);
     bgView.setY(y);
-    bgView.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        Toast.makeText(getContext(), day.getCode().toString(), Toast.LENGTH_SHORT).show();
-      }
-    });
+    bgView.setOnClickListener(
+        v -> Toast.makeText(getContext(), day.getCode().toString(), Toast.LENGTH_SHORT).show());
     flCalendarRoot.addView(bgView);
   }
 }

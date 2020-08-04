@@ -4,14 +4,16 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.View;
 import androidx.annotation.Nullable;
+import com.android.calendars.DateHelper;
 import com.android.calendars.R;
 import com.android.calendars.models.DayMonthly;
 import com.android.calendars.models.Event;
@@ -27,14 +29,13 @@ import java.util.List;
  */
 public class MonthView extends View {
 
-  private float BG_CORNER_RADIUS = 8f;
+  private float BG_CORNER_RADIUS = 6f;
   private int ROW_COUNT = 6;
   private int COL_COUNT = 7;
 
   private Paint paint;
   private TextPaint eventTitlePaint;
   private Paint gridPaint;
-  //  private var config = context.config
   private float dayWidth = 0f;
   private float dayHeight = 0f;
   private int primaryColor = 0;
@@ -43,15 +44,15 @@ public class MonthView extends View {
   private int eventTitleHeight = 0;
   private int currDayOfWeek = 0;
   private float smallPadding = 0f;
-  private int maxEventsPerDay = 0;
   private int horizontalOffset = 0;
-  private boolean showWeekNumbers = false;
-  private boolean dimPastEvents = true;
   private List<MonthEvent> allEvents = new ArrayList<>();
   private RectF bgRectF = new RectF();
   private List<String> dayLetters = new ArrayList<>();
   private List<DayMonthly> days = new ArrayList<>();
   private SparseIntArray dayVerticalOffsets = new SparseIntArray();
+
+  private final int BASE_BLUE = Color.parseColor("#007AFF");
+  private final int LINE_GRAY = Color.parseColor("#D4D4D4");
 
   public MonthView(Context context) {
     super(context);
@@ -71,9 +72,12 @@ public class MonthView extends View {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-
     dayVerticalOffsets.clear();
     measureDaySize(canvas);
+    if (dayHeight == 0 && dayWidth == 0) {
+      return;
+    }
+    //draw month UI and day of month
     drawGrid(canvas);
     addWeekDayLetters(canvas);
     if (days == null || days.isEmpty()) {
@@ -91,9 +95,9 @@ public class MonthView extends View {
           float yPos = y * dayHeight + verticalOffset;
           float xPosCenter = xPos + dayWidth / 2;
           float textSize = paint.getTextSize();
-          Calendar calendar = Calendar.getInstance();
-          calendar.setTime(day.getCode());
-          Log.d("Today", "day:" + day.getValue() + "/" + (calendar.get(Calendar.MONTH) + 1));
+//          Calendar calendar = Calendar.getInstance();
+//          calendar.setTime(day.getCode());
+//          Log.d("Today", "day:" + day.getValue() + "/" + (calendar.get(Calendar.MONTH) + 1));
           if (day.isToday()) {
             canvas.drawCircle(xPosCenter, yPos + textSize * 1.65f, textSize * 1.2f,
                 getCirclePaint(day));
@@ -101,11 +105,12 @@ public class MonthView extends View {
           canvas.drawText(String.valueOf(day.getValue()), xPosCenter,
               yPos + textSize * 2f, getTextPaint(day));
           dayVerticalOffsets
-              .put(day.getIndexOnMonthView(), (int) (verticalOffset + paint.getTextSize() * 2));
+              .put(day.getIndexOnMonthView(), (int) (verticalOffset + textSize * 2f));
         }
         curId++;
       }
     }
+    //draw events
     for (MonthEvent event : allEvents) {
       drawEvent(event, canvas);
     }
@@ -113,7 +118,6 @@ public class MonthView extends View {
 
   public void updateDays(List<DayMonthly> newDays) {
     days = newDays;
-    showWeekNumbers = false;
     horizontalOffset = 0;
     initWeekDayLetters();
     setupCurrentDayOfWeekIndex();
@@ -140,57 +144,113 @@ public class MonthView extends View {
       verticalOffset = Math
           .max(verticalOffset, dayVerticalOffsets.get(event.getStartDayIndex() + i));
     }
+    int numberDayEvent = event.getDayCount();
     float xPos = event.getStartDayIndex() % 7 * dayWidth + horizontalOffset;
-    float yPos = (event.getStartDayIndex() / 7f) * dayHeight;
+    float yPos = (int) (event.getStartDayIndex() / 7f) * dayHeight + paint.getTextSize();
     float xPosCenter = xPos + dayWidth / 2;
 
-    if (verticalOffset - eventTitleHeight * 2 > dayHeight) {
-      canvas.drawText("...", xPosCenter, yPos + verticalOffset - eventTitleHeight / 2f,
+    if (verticalOffset > dayHeight) {
+      canvas.drawText("...", xPosCenter, yPos + verticalOffset - eventTitleHeight * 0.5f,
           getTextPaint(days.get(event.getStartDayIndex())));
       return;
     }
 
-    // event background rectangle
     float backgroundY = yPos + verticalOffset;
     float bgLeft = xPos + smallPadding;
-    float bgTop = backgroundY + smallPadding - eventTitleHeight;
-    float bgRight = xPos - smallPadding + dayWidth * event.getDayCount();
-    float bgBottom = backgroundY + smallPadding * 2;
+    float bgRight = xPos + dayWidth * numberDayEvent - smallPadding;
+    float bgTop = backgroundY - eventTitleHeight;
+    float bgBottom = bgTop + eventTitleHeight + smallPadding * 4;
+
+    boolean isOneEventOnDay = event.getNumberEventOnDay() == 1;
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(event.getStartDate());
+    boolean isToday = DateHelper.isToday(calendar);
+
+    if (isToday) {
+      bgTop += eventTitleHeight;
+      backgroundY += eventTitleHeight;
+    }
+    if (isOneEventOnDay) {
+      if (isToday) {
+        bgBottom += eventTitleHeight * 3f;
+      } else {
+        bgBottom += eventTitleHeight * 2f;
+      }
+    }
     if (bgRight > canvas.getWidth() * 1f) {
       bgRight = canvas.getWidth() * 1f - smallPadding;
       int newStartDayIndex = (event.getStartDayIndex() / 7 + 1) * 7;
       if (newStartDayIndex < 42) {
         MonthEvent newEvent = new MonthEvent(event.getId(), event.getTitle(), event.getStartDate(),
-            event.getColor(), newStartDayIndex,
-            event.getDayCount() - newStartDayIndex + event.getStartDayIndex(),
+            newStartDayIndex, event.getDayCount() - newStartDayIndex + event.getStartDayIndex(),
             event.getOriginalStartDayIndex(), event.isAllDay());
+        newEvent.setNumberEventOnDay(event.getNumberEventOnDay());
+        newEvent.setEventBottomColor(event.getEventBottomColor());
         drawEvent(newEvent, canvas);
       }
     }
-
-    DayMonthly startDayIndex = days.get(event.getOriginalStartDayIndex());
-    DayMonthly endDayIndex = days
-        .get(Math.min(event.getStartDayIndex() + event.getDayCount() - 1, 41));
+    //draw background
     bgRectF.set(bgLeft, bgTop, bgRight, bgBottom);
     canvas.drawRoundRect(bgRectF, BG_CORNER_RADIUS, BG_CORNER_RADIUS,
-        getEventBackgroundColor(event, startDayIndex, endDayIndex));
+        getEventBackgroundColor(event));
 
-    drawEventTitle(event, canvas, xPos, yPos + verticalOffset, bgRight - bgLeft - smallPadding,
-        startDayIndex, endDayIndex);
+    drawPathLeftOrBottom(canvas, event, bgLeft, bgTop, bgRight, bgBottom);
+    drawEventTitle(event, canvas, xPos, backgroundY, bgRight - bgLeft - smallPadding);
 
     for (int i = 0; i < loopSize; i++) {
       dayVerticalOffsets.put(event.getStartDayIndex() + i,
-          (int) (verticalOffset + eventTitleHeight + smallPadding * 2));
+          (int) (verticalOffset + bgRectF.height() + smallPadding));
     }
   }
 
+  private void drawPathLeftOrBottom(Canvas canvas, MonthEvent event, float bgLeft, float bgTop,
+      float bgRight, float bgBottom) {
+    int color = BASE_BLUE;
+    RectF rectLeft = new RectF();
+    rectLeft.set(bgLeft, bgTop, bgLeft + smallPadding, bgBottom);
+    final Path path = new Path();
+    float[] cornersTopLeft = new float[]{
+        BG_CORNER_RADIUS, BG_CORNER_RADIUS,        // Top left radius in px
+        0, 0,                                      // Top right radius in px
+        0, 0,                                      // Bottom right radius in px
+        BG_CORNER_RADIUS, BG_CORNER_RADIUS         // Bottom left radius in px
+    };
+
+    if (event.getNumberEventOnDay() < 2) {
+      rectLeft.set(bgLeft, bgBottom - smallPadding, bgRight, bgBottom);
+      cornersTopLeft = new float[]{
+          0, 0,        // Top left radius in px
+          0, 0,                                      // Top right radius in px
+          BG_CORNER_RADIUS, BG_CORNER_RADIUS,        // Bottom right radius in px
+          BG_CORNER_RADIUS, BG_CORNER_RADIUS         // Bottom left radius in px
+      };
+    }
+    path.addRoundRect(rectLeft, cornersTopLeft, Path.Direction.CW);
+    Paint leftPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    leftPaint.setColor(color);
+    canvas.drawPath(path, leftPaint);
+  }
+
   private void drawEventTitle(MonthEvent event, Canvas canvas, float x, float y,
-      float availableWidth, DayMonthly startDay, DayMonthly endDay) {
-    CharSequence ellipsized = TextUtils
-        .ellipsize(event.getTitle(), eventTitlePaint, availableWidth - smallPadding,
-            TextUtils.TruncateAt.END);
-    canvas.drawText(event.getTitle(), 0, ellipsized.length(), x + smallPadding * 2, y,
-        getEventTitlePaint(event, startDay, endDay));
+      float availableWidth) {
+    Paint paint = getEventTitlePaint();
+    if (event.getTitle().contains("\n") && event.getNumberEventOnDay() == 1) {
+      String[] text = event.getTitle().split("\n");
+      for (String s : text) {
+        CharSequence ellipsized = TextUtils
+            .ellipsize(s, eventTitlePaint, availableWidth - smallPadding,
+                TextUtils.TruncateAt.END);
+        canvas.drawText(s, 0, ellipsized.length(), x + smallPadding * 2, y, paint);
+        y += paint.getTextSize();
+      }
+    } else {
+      CharSequence ellipsized = TextUtils
+          .ellipsize(event.getTitle(), eventTitlePaint, availableWidth - smallPadding,
+              TextUtils.TruncateAt.END);
+      float textOffset = (bgRectF.height() - eventTitleHeight - smallPadding) * 0.5f;
+      canvas.drawText(event.getTitle(), 0, ellipsized.length(), x + smallPadding * 2,
+          y + textOffset, paint);
+    }
   }
 
   private void groupAllEvents() {
@@ -201,12 +261,14 @@ public class MonthView extends View {
           MonthEvent lastEvent = allEvents.stream()
               .filter(evt -> event.getId().equalsIgnoreCase(evt.getId())).findFirst().orElse(null);
           int dayEventCount = getEventLastingDaysCount(event);
-          boolean validDayEvent = false;
           if ((lastEvent == null || lastEvent.getStartDayIndex() + dayEventCount <= day
-              .getIndexOnMonthView()) && !validDayEvent) {
+              .getIndexOnMonthView())) {
             MonthEvent monthEvent = new MonthEvent(event.getId(), event.getTitle(),
-                event.getStartDate(), Color.parseColor("#903BAA"), day.getIndexOnMonthView(), dayEventCount,
+                event.getStartDate(), day.getIndexOnMonthView(),
+                dayEventCount,
                 day.getIndexOnMonthView(), false);
+            monthEvent.setNumberEventOnDay(events.size());
+            monthEvent.setEventBottomColor(event.getBottomColors());
             allEvents.add(monthEvent);
           }
         });
@@ -252,21 +314,15 @@ public class MonthView extends View {
     }
   }
 
-  private Paint getEventTitlePaint(MonthEvent event, DayMonthly startDay, DayMonthly endDay) {
-    int paintColor = paintColor = Color.WHITE;;
-//    if (!startDay.isThisMonth() && !endDay.isThisMonth()) {
-//      paintColor = Color.WHITE;
-//    }
+  private Paint getEventTitlePaint() {
     Paint curPaint = new Paint(eventTitlePaint);
-    curPaint.setColor(paintColor);
+    curPaint.setColor(Color.BLACK);
+    curPaint.setTextAlign(Align.LEFT);
     return curPaint;
   }
 
-  private Paint getEventBackgroundColor(MonthEvent event, DayMonthly startDay, DayMonthly endDay) {
-    int paintColor = event.getColor();
-    if (!startDay.isThisMonth() && !endDay.isThisMonth()) {
-      paintColor = Color.GREEN;
-    }
+  private Paint getEventBackgroundColor(MonthEvent event) {
+    int paintColor = event.getBackgroundColor();
     return getColoredPaint(paintColor);
   }
 
@@ -275,16 +331,16 @@ public class MonthView extends View {
     if (startDay.isToday()) {
       paintColor = Color.WHITE;
     } else if (!startDay.isThisMonth()) {
-      paintColor = Color.LTGRAY;
+      paintColor = LINE_GRAY;
     }
     return getColoredPaint(paintColor);
   }
 
   private Paint getCirclePaint(DayMonthly day) {
     Paint curPaint = new Paint(paint);
-    int paintColor = Color.RED;
+    int paintColor = BASE_BLUE;
     if (!day.isThisMonth()) {
-      paintColor = Color.LTGRAY;
+      paintColor = LINE_GRAY;
     }
     curPaint.setColor(paintColor);
     return curPaint;
@@ -310,20 +366,14 @@ public class MonthView extends View {
   private void measureDaySize(Canvas canvas) {
     dayWidth = (canvas.getWidth() - horizontalOffset) / 7f;
     dayHeight = (canvas.getHeight() - weekDaysLetterHeight) / (ROW_COUNT * 1f);
-    float availableHeightForEvents = (dayHeight - weekDaysLetterHeight) * 1f;
-    maxEventsPerDay = (int) (availableHeightForEvents / eventTitleHeight);
   }
 
   private void drawGrid(Canvas canvas) {
     // vertical lines
     for (int i = 0; i <= 6; i++) {
       float lineX = i * dayWidth;
-      if (showWeekNumbers) {
-        lineX += horizontalOffset;
-      }
       canvas.drawLine(lineX, weekDaysLetterHeight, lineX, canvas.getHeight(), gridPaint);
     }
-
     // horizontal lines
 //    canvas.drawLine(0f, 0f, canvas.getHeight(), 0f, gridPaint);
     for (int i = 0; i <= 5; i++) {
@@ -335,10 +385,7 @@ public class MonthView extends View {
   private void init(Context context) {
     primaryColor = Color.BLACK;
     textColor = Color.BLACK;
-//    showWeekNumbers = config.showWeekNumbers
-//    dimPastEvents = config.dimPastEvents
-
-    smallPadding = context.getResources().getDisplayMetrics().density;
+    smallPadding = context.getResources().getDimensionPixelSize(R.dimen.padding_2dp);
     float normalTextSize = context.getResources().getDimensionPixelSize(R.dimen.text_size_14sp);
     weekDaysLetterHeight = (int) (normalTextSize * 2);
     paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -347,7 +394,8 @@ public class MonthView extends View {
     paint.setTextAlign(Paint.Align.CENTER);
 
     gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    gridPaint.setColor(Color.GRAY);
+    gridPaint.setColor(LINE_GRAY);
+    gridPaint.setStrokeWidth(2f);
 
     float smallerTextSize = context.getResources().getDimensionPixelSize(R.dimen.text_size_10sp);
     eventTitleHeight = (int) smallerTextSize;
