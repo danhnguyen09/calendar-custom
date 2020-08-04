@@ -1,4 +1,4 @@
-package com.android.calendars.ui.main;
+package com.wataandroidteam.calendarcustom.uis;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,11 +11,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import com.android.calendars.Constant;
-import com.android.calendars.R;
-import com.android.calendars.models.DayMonthly;
-import com.android.calendars.models.Event;
-import com.android.calendars.ui.main.customviews.MonthView;
+import com.wataandroidteam.calendarcustom.Constant;
+import com.wataandroidteam.calendarcustom.IMonthListener;
+import com.wataandroidteam.calendarcustom.MonthlyCalendar;
+import com.wataandroidteam.calendarcustom.MonthlyCalendarImpl;
+import com.wataandroidteam.calendarcustom.R;
+import com.wataandroidteam.calendarcustom.models.DayMonthly;
+import com.wataandroidteam.calendarcustom.models.Event;
+import com.wataandroidteam.calendarcustom.uis.customviews.MonthView;
 import java.util.List;
 
 public class MonthItemFragment extends Fragment implements MonthlyCalendar {

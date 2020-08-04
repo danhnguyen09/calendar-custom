@@ -1,4 +1,4 @@
-package com.android.calendars.models;
+package com.wataandroidteam.calendarcustom.models;
 
 import android.graphics.Color;
 import android.text.TextUtils;

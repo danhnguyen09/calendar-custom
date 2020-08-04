@@ -1,4 +1,4 @@
-package com.android.calendars.ui.main;
+package com.wataandroidteam.calendarcustom;
 
 import android.os.Bundle;
 import android.util.SparseArray;
@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import com.android.calendars.Constant;
+import com.wataandroidteam.calendarcustom.uis.MonthItemFragment;
 import java.util.List;
 
 public class MonthPagerAdapter extends FragmentStatePagerAdapter {
@@ -24,7 +24,7 @@ public class MonthPagerAdapter extends FragmentStatePagerAdapter {
   public Fragment getItem(int position) {
     Bundle bundle = new Bundle();
     bundle.putLong(Constant.DAY_CODE, mCodes.get(position));
-    MonthItemFragment monthFragment =  MonthItemFragment.newInstance(bundle);
+    MonthItemFragment monthFragment = MonthItemFragment.newInstance(bundle);
     mFragments.put(position, monthFragment);
     return monthFragment;
   }

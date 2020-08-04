@@ -1,9 +1,8 @@
-package com.android.calendars.ui.main;
+package com.wataandroidteam.calendarcustom;
 
 import android.content.Context;
-import com.android.calendars.DateHelper;
-import com.android.calendars.models.DayMonthly;
-import com.android.calendars.models.Event;
+import com.wataandroidteam.calendarcustom.models.DayMonthly;
+import com.wataandroidteam.calendarcustom.models.Event;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;

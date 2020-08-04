@@ -1,4 +1,4 @@
-package com.android.calendars.ui.main.customviews;
+package com.wataandroidteam.calendarcustom.uis.customviews;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

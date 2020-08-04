@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">Calendars</string>
+  <string name="tab_text_1">Tab 1</string>
+  <string name="tab_text_2">Tab 2</string>
+  <string name="january">January</string>
+  <string name="february">February</string>
+  <string name="march">March</string>
+  <string name="april">April</string>
+  <string name="may">May</string>
+  <string name="june">June</string>
+  <string name="july">July</string>
+  <string name="august">August</string>
+  <string name="september">September</string>
+  <string name="october">October</string>
+  <string name="november">November</string>
+  <string name="december">December</string>
+
+  <string name="monday_letter">M</string>
+  <string name="tuesday_letter">T</string>
+  <string name="wednesday_letter">W</string>
+  <string name="thursday_letter">T</string>
+  <string name="friday_letter">F</string>
+  <string name="saturday_letter">S</string>
+  <string name="sunday_letter">S</string>
+
+  <array name="week_day_letters">
+    <item>@string/monday_letter</item>
+    <item>@string/tuesday_letter</item>
+    <item>@string/wednesday_letter</item>
+    <item>@string/thursday_letter</item>
+    <item>@string/friday_letter</item>
+    <item>@string/saturday_letter</item>
+    <item>@string/sunday_letter</item>
+  </array>
+
+  <string-array name="months">
+    <item>@string/january</item>
+    <item>@string/february</item>
+    <item>@string/march</item>
+    <item>@string/april</item>
+    <item>@string/may</item>
+    <item>@string/june</item>
+    <item>@string/july</item>
+    <item>@string/august</item>
+    <item>@string/september</item>
+    <item>@string/october</item>
+    <item>@string/november</item>
+    <item>@string/december</item>
+  </string-array>
+</resources>

@@ -1,4 +1,4 @@
-package com.android.calendars;
+package com.wataandroidteam.calendarcustom;
 
 public class Constant {
   public static String DAY_CODE = "day_code";

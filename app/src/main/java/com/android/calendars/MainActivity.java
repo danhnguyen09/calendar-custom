@@ -2,7 +2,8 @@ package com.android.calendars;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import com.android.calendars.ui.main.MonthFragment;
+import com.wataandroidteam.calendarcustom.DateHelper;
+import com.wataandroidteam.calendarcustom.uis.MonthFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -10,7 +11,7 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    MonthFragment monthFragment = new MonthFragment();
+    MonthFragment monthFragment = MonthFragment.newInstance();
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fragments_holder, monthFragment, monthFragment.getClass().getSimpleName())
         .addToBackStack(null)

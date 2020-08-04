@@ -1,8 +1,8 @@
-package com.android.calendars;
+package com.wataandroidteam.calendarcustom;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import com.android.calendars.models.Event;
+import com.wataandroidteam.calendarcustom.models.Event;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;

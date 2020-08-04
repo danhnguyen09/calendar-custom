@@ -1,6 +1,5 @@
-package com.android.calendars.models;
+package com.wataandroidteam.calendarcustom.models;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 

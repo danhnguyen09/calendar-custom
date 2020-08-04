@@ -1,4 +1,4 @@
-package com.android.calendars.ui.main.customviews;
+package com.wataandroidteam.calendarcustom.uis.customviews;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,11 +13,11 @@ import android.util.AttributeSet;
 import android.util.SparseIntArray;
 import android.view.View;
 import androidx.annotation.Nullable;
-import com.android.calendars.DateHelper;
-import com.android.calendars.R;
-import com.android.calendars.models.DayMonthly;
-import com.android.calendars.models.Event;
-import com.android.calendars.models.MonthEvent;
+import com.wataandroidteam.calendarcustom.DateHelper;
+import com.wataandroidteam.calendarcustom.R;
+import com.wataandroidteam.calendarcustom.models.DayMonthly;
+import com.wataandroidteam.calendarcustom.models.Event;
+import com.wataandroidteam.calendarcustom.models.MonthEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;

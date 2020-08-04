@@ -15,7 +15,7 @@
     android:layout_below="@+id/top_value"
     android:layout_marginTop="10dp">
 
-    <com.android.calendars.ui.main.customviews.MonthView
+    <com.wataandroidteam.calendarcustom.uis.customviews.MonthView
       android:id="@+id/month_view_wrapper"
       android:layout_width="match_parent"
       android:layout_height="match_parent" />

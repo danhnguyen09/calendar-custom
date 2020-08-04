@@ -1,8 +1,7 @@
-package com.android.calendars.ui.main;
+package com.wataandroidteam.calendarcustom;
 
-
-import com.android.calendars.models.DayMonthly;
-import com.android.calendars.models.Event;
+import com.wataandroidteam.calendarcustom.models.DayMonthly;
+import com.wataandroidteam.calendarcustom.models.Event;
 import java.util.List;
 
 public interface IMonthListener {
