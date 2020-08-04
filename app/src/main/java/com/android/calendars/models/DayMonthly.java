@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by Danh Nguyen on 7/31/20.
- */
 public class DayMonthly {
 
   private int value;

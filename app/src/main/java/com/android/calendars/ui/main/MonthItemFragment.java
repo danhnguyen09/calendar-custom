@@ -4,26 +4,20 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.android.calendars.Constant;
 import com.android.calendars.R;
 import com.android.calendars.models.DayMonthly;
+import com.android.calendars.models.Event;
 import com.android.calendars.ui.main.customviews.MonthView;
-import java.util.Date;
 import java.util.List;
 
-/**
- * Created by Danh Nguyen on 7/31/20.
- */
 public class MonthItemFragment extends Fragment implements MonthlyCalendar {
 
   private MonthlyCalendarImpl mMonthlyCalendarImpl;
@@ -32,6 +26,13 @@ public class MonthItemFragment extends Fragment implements MonthlyCalendar {
   private TextView tvTitle;
   private FrameLayout flCalendarRoot;
   private boolean isAddingBG;
+  private List<Event> mEventList;
+
+  public static MonthItemFragment newInstance(Bundle bundle) {
+    MonthItemFragment monthItemFragment = new MonthItemFragment();
+    monthItemFragment.setArguments(bundle);
+    return monthItemFragment;
+  }
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,29 +55,29 @@ public class MonthItemFragment extends Fragment implements MonthlyCalendar {
     tvTitle = view.findViewById(R.id.top_value);
     flCalendarRoot = view.findViewById(R.id.fl_calendar_container);
     mMonthlyCalendarImpl = new MonthlyCalendarImpl(this, view.getContext());
+    if (getParentFragment() instanceof IMonthListener) {
+      mEventList = ((IMonthListener) getParentFragment()).getEventList();
+    }
     mMonthlyCalendarImpl.getDays(mDayCode);
   }
 
   @Override
-  public void updateMonthlyCalendar(Context context, String month, final List<DayMonthly> days,
-      Boolean checkedEvents, Date currTargetDate) {
+  public void updateMonthlyCalendar(Context context, String month, final List<DayMonthly> days) {
     tvTitle.setText(month);
+    mMonthlyCalendarImpl.makeEvent(mEventList, days);
     monthView.updateDays(days);
     final LayoutInflater inflater = LayoutInflater.from(context);
-    monthView.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-      @Override
-      public void onGlobalLayout() {
-        if (monthView.getDayWidth() != 0 && monthView.getDayHeight() != 0 && !isAddingBG) {
-          isAddingBG = true;
-          int dayIndex = 0;
-          for (int y = 0; y < 6; y++) {
-            for (int x = 0; x < 7; x++) {
-              DayMonthly day = days.get(dayIndex);
-              float xPos = x * monthView.getDayWidth();
-              float yPos = y * monthView.getDayHeight() + monthView.getWeekDaysLetterHeight();
-              addBGView(inflater, day, xPos, yPos);
-              dayIndex++;
-            }
+    monthView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+      if (monthView.getDayWidth() != 0 && monthView.getDayHeight() != 0 && !isAddingBG) {
+        isAddingBG = true;
+        int dayIndex = 0;
+        for (int y = 0; y < 6; y++) {
+          for (int x = 0; x < 7; x++) {
+            DayMonthly day = days.get(dayIndex);
+            float xPos = x * monthView.getDayWidth();
+            float yPos = y * monthView.getDayHeight() + monthView.getWeekDaysLetterHeight();
+            addBGView(inflater, day, xPos, yPos);
+            dayIndex++;
           }
         }
       }
@@ -92,7 +93,11 @@ public class MonthItemFragment extends Fragment implements MonthlyCalendar {
     bgView.setX(x);
     bgView.setY(y);
     bgView.setOnClickListener(
-        v -> Toast.makeText(getContext(), day.getCode().toString(), Toast.LENGTH_SHORT).show());
+        v -> {
+          if (getParentFragment() instanceof IMonthListener) {
+            ((IMonthListener) getParentFragment()).onDayMonthlyClicked(day);
+          }
+        });
     flCalendarRoot.addView(bgView);
   }
 }

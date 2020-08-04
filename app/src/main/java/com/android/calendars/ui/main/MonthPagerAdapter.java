@@ -9,9 +9,6 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import com.android.calendars.Constant;
 import java.util.List;
 
-/**
- * Created by Danh Nguyen on 7/31/20.
- */
 public class MonthPagerAdapter extends FragmentStatePagerAdapter {
 
   private SparseArray<MonthItemFragment> mFragments = new SparseArray<>();
@@ -27,10 +24,14 @@ public class MonthPagerAdapter extends FragmentStatePagerAdapter {
   public Fragment getItem(int position) {
     Bundle bundle = new Bundle();
     bundle.putLong(Constant.DAY_CODE, mCodes.get(position));
-    MonthItemFragment monthFragment = new MonthItemFragment();
-    monthFragment.setArguments(bundle);
+    MonthItemFragment monthFragment =  MonthItemFragment.newInstance(bundle);
     mFragments.put(position, monthFragment);
     return monthFragment;
+  }
+
+  @Override
+  public int getItemPosition(@NonNull Object object) {
+    return POSITION_NONE;
   }
 
   @Override

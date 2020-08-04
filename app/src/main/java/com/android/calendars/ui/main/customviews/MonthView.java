@@ -24,9 +24,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by Danh Nguyen on 7/31/20.
- */
 public class MonthView extends View {
 
   private float BG_CORNER_RADIUS = 6f;
@@ -170,7 +167,7 @@ public class MonthView extends View {
       bgTop += eventTitleHeight;
       backgroundY += eventTitleHeight;
     }
-    if (isOneEventOnDay) {
+    if (isOneEventOnDay && !event.isSameDayWithOtherEvent()) {
       if (isToday) {
         bgBottom += eventTitleHeight * 3f;
       } else {

@@ -6,9 +6,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import com.duolingo.open.rtlviewpager.RtlViewPager;
 
-/**
- * Created by Danh Nguyen on 7/31/20.
- */
 public class MonthPager extends RtlViewPager {
 
   public MonthPager(Context context) {

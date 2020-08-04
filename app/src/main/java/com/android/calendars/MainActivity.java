@@ -15,6 +15,8 @@ public class MainActivity extends AppCompatActivity {
         .replace(R.id.fragments_holder, monthFragment, monthFragment.getClass().getSimpleName())
         .addToBackStack(null)
         .commit();
+    findViewById(R.id.fab)
+        .setOnClickListener(view -> monthFragment.onAddEvents(DateHelper.mockEvents()));
   }
 
   @Override

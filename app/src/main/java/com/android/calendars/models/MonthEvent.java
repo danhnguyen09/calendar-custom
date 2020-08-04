@@ -4,10 +4,8 @@ import android.graphics.Color;
 import android.text.TextUtils;
 import java.util.Date;
 
-/**
- * Created by Danh Nguyen on 8/4/20.
- */
 public class MonthEvent {
+
   private String id;
   private String title;
   private Date startDate;
@@ -19,6 +17,7 @@ public class MonthEvent {
   private boolean isAllDay;
   private int numberEventOnDay;
   private int numberLineOfTitle = 1;
+  private boolean isSameDayWithOtherEvent;
 
   public MonthEvent(String id, String title, Date startDate, int startDayIndex,
       int dayCount, int originalStartDayIndex, boolean isAllDay) {
@@ -85,5 +84,13 @@ public class MonthEvent {
       numberLineOfTitle = arrays.length;
     }
     return numberLineOfTitle;
+  }
+
+  public void setSameDayWithOtherEvent(boolean sameDayWithOtherEvent) {
+    isSameDayWithOtherEvent = sameDayWithOtherEvent;
+  }
+
+  public boolean isSameDayWithOtherEvent() {
+    return isSameDayWithOtherEvent;
   }
 }

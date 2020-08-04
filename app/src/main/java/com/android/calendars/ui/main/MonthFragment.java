@@ -4,21 +4,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.android.calendars.R;
+import com.android.calendars.models.DayMonthly;
+import com.android.calendars.models.Event;
 import com.android.calendars.ui.main.customviews.MonthPager;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class MonthFragment extends Fragment {
+public class MonthFragment extends Fragment implements IMonthListener {
 
   private int NUMBER_OF_MONTH_IN_THE_PAST = 20;
   private int NUMBER_OF_MONTH_IN_THE_FEATURE = 100;
   private MonthPager mMonthPager;
   private MonthPagerAdapter mMonthPagerAdapter;
+  private List<Event> mEvents;
 
   @Nullable
   @Override
@@ -46,5 +50,21 @@ public class MonthFragment extends Fragment {
       months.add(calendar.getTimeInMillis());
     }
     return months;
+  }
+
+  @Override
+  public void onAddEvents(List<Event> events) {
+    mEvents = events;
+    mMonthPagerAdapter.notifyDataSetChanged();
+  }
+
+  @Override
+  public List<Event> getEventList() {
+    return mEvents;
+  }
+
+  @Override
+  public void onDayMonthlyClicked(DayMonthly day) {
+    Toast.makeText(getContext(), day.getCode().toString(), Toast.LENGTH_SHORT).show();
   }
 }
