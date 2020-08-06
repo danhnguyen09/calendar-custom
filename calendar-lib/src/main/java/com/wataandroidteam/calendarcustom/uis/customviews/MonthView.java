@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 public class MonthView extends View {
@@ -147,7 +148,7 @@ public class MonthView extends View {
     float xPosCenter = xPos + dayWidth / 2;
 
     if (verticalOffset > dayHeight) {
-      canvas.drawText("...", xPosCenter, yPos + verticalOffset - eventTitleHeight * 0.5f,
+      canvas.drawText("...", xPosCenter, yPos + verticalOffset - eventTitleHeight,
           getTextPaint(days.get(event.getStartDayIndex())));
       return;
     }
@@ -166,14 +167,17 @@ public class MonthView extends View {
     if (isToday) {
       bgTop += eventTitleHeight;
       backgroundY += eventTitleHeight;
+      bgBottom += eventTitleHeight;
     }
+
     if (isOneEventOnDay && !event.isSameDayWithOtherEvent()) {
       if (isToday) {
         bgBottom += eventTitleHeight * 3f;
       } else {
-        bgBottom += eventTitleHeight * 2f;
+        bgBottom = bgTop + eventTitleHeight + smallPadding * 4 + eventTitleHeight * 2f;
       }
     }
+
     if (bgRight > canvas.getWidth() * 1f) {
       bgRight = canvas.getWidth() * 1f - smallPadding;
       int newStartDayIndex = (event.getStartDayIndex() / 7 + 1) * 7;
@@ -183,7 +187,8 @@ public class MonthView extends View {
             event.getOriginalStartDayIndex(), event.isAllDay());
         newEvent.setNumberEventOnDay(event.getNumberEventOnDay());
         newEvent.setEventBottomColor(event.getEventBottomColor());
-        drawEvent(newEvent, canvas);
+        newEvent.setSameDayWithOtherEvent(event.isSameDayWithOtherEvent());
+       drawEvent(newEvent, canvas);
       }
     }
     //draw background
@@ -196,7 +201,7 @@ public class MonthView extends View {
 
     for (int i = 0; i < loopSize; i++) {
       dayVerticalOffsets.put(event.getStartDayIndex() + i,
-          (int) (verticalOffset + bgRectF.height() + smallPadding));
+          (int) (verticalOffset + bgRectF.height() + smallPadding + (isToday ? eventTitleHeight : 0)));
     }
   }
 
@@ -254,6 +259,7 @@ public class MonthView extends View {
     days.forEach(day -> {
       List<Event> events = day.getDayEvents();
       if (events != null && !events.isEmpty()) {
+        int eventSize = events.size();
         events.forEach(event -> {
           MonthEvent lastEvent = allEvents.stream()
               .filter(evt -> event.getId().equalsIgnoreCase(evt.getId())).findFirst().orElse(null);
@@ -266,11 +272,27 @@ public class MonthView extends View {
                 day.getIndexOnMonthView(), false);
             monthEvent.setNumberEventOnDay(events.size());
             monthEvent.setEventBottomColor(event.getBottomColors());
+            monthEvent.setSameDayWithOtherEvent(eventSize > 1);
             allEvents.add(monthEvent);
           }
         });
       }
     });
+    HashSet<String> idEvents = new HashSet<>();
+    allEvents.forEach(monthEvent -> allEvents.forEach(event -> {
+      if (!monthEvent.getId().equalsIgnoreCase(event.getId())) {
+        for (int i = monthEvent.getStartDayIndex() ; i < monthEvent.getStartDayIndex() + monthEvent.getDayCount(); i++) {
+          if (i == event.getStartDayIndex()) {
+            idEvents.add(monthEvent.getId());
+            idEvents.add(event.getId());
+          }
+        }
+      }
+    }));
+    for (String idEvent : idEvents) {
+      allEvents.stream().filter(event -> idEvent.equalsIgnoreCase(event.getId()))
+          .forEach(event -> event.setSameDayWithOtherEvent(true));
+    }
   }
 
   // take into account cases when an event starts on the previous screen, subtract those days

@@ -29,15 +29,15 @@ public class DateHelper {
     Event event7 = new Event("007", "7. Event test 07", createEventDate(28, 8, 2020),
         createEventDate(3, 9, 2020));
     Event event8 = new Event("008", "8. Event test 08", createEventDate(6, 8, 2020),
-        createEventDate(10, 9, 2020));
+        createEventDate(8, 8, 2020));
 
     events.add(event1);
     events.add(event2);
     events.add(event3);
     events.add(event4);
-    events.add(event5);
+//    events.add(event5);
     events.add(event6);
-//    events.add(event7);
+    events.add(event7);
     events.add(event8);
     return events;
   }
